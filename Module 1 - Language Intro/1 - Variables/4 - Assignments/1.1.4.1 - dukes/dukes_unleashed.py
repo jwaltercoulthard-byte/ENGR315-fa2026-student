@@ -14,6 +14,18 @@ Note: this problem does not require the "compounding interest" formula from the 
 
 ### Your code here ###
 
-in_state_gift = 0
+#assuming the question is asking how much money would need to be given to 
+#generate enough interest to cover the costs of one year for both in-state and out-of-state students
 
-out_state_gift = 0
+
+
+in_state_gift = 30792 / 0.05
+
+out_state_gift = 47882 / 0.05
+
+total_investment_needed = ((in_state_gift + out_state_gift)/1000000) #to make sure its over 1m and that the 
+#5% assumption is reasonable
+
+print("In-state gift needed: $", in_state_gift)
+print("Out-of-state gift needed: $", out_state_gift)
+print("Total investment needed: M$", total_investment_needed)
