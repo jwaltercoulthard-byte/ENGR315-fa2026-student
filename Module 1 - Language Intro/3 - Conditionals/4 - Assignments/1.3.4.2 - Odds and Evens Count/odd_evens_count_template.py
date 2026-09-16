@@ -31,8 +31,8 @@ num_odds = 0
 ### YOUR CODE BEGINS HERE ###
 
 for i in nums:
-    if i % 2 == 0:
-        num_evens += 1
+    if nums[i]%2 == 0:
+        num_evens +=1
     else:
         num_odds += 1
 

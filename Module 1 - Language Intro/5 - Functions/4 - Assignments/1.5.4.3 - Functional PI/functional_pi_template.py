@@ -11,9 +11,29 @@ def my_pi(target_error):
 
     ### YOUR CODE HERE ###
 
-    # change this so an actual value is returned
-    return 0
+    
+    #Set other variables to initial values
+    a = 1
+    b = 1 / math.sqrt(2)
+    t = 1 / 4
+    p = 1
 
+    while (abs(a-b) >= target_error):
+
+        a_next = (a + b) / 2
+        b_next = math.sqrt(a * b)
+        t_next = t - p * (a - a_next) ** 2
+        p_next = 2 * p
+
+        #update variables
+        a = a_next
+        b = b_next
+        t = t_next
+        p = p_next
+
+
+    # change this so an actual value is returned
+    return (a + b) ** 2 / (4 * t)
 
 
 
