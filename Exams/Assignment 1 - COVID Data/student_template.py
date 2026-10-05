@@ -101,7 +101,7 @@ def main(filepath):
         elif county.lower() in ['rockingham'] and state.lower() in ['virginia']: #do the same for rockingham
             rockingham_data.append(entry)
 
-    # Print the filtered data commented out for sanity check
+    # # Print the filtered data commented out for sanity check
     # for entry in harrisonburg_data:
     #     date, county, state, fips, cases, deaths = entry
     #     print(f"Date: {date}, County: {county}, State: {state}, FIPS: {fips}, Cases: {cases}, Deaths: {deaths}")
@@ -145,25 +145,33 @@ def main(filepath):
     What date in Rockingham County? (2 questions)
     """
 
-    #start with harrisonburg data, I'm gonna do this one with list functions
-    hburg_dates = [entry[0] for entry in harrisonburg_data] #get the dates
-    hburg_cases = [entry[4] for entry in harrisonburg_data] #get the cases
+    #start with harrisonburg data, I'm gonna do this one with numpy arrays for the diff function
+    #This constructs numpy arrays for dates and cases by flipping through entry 0 and 4 of the data array
+    hburg_dates = np.array([entry[0] for entry in harrisonburg_data]) 
+    hburg_cases = np.array([entry[4] for entry in harrisonburg_data]) 
 
-    #find the max cases, entry number of that, and the corresponding date
-    max_hburg_cases = max(hburg_cases)
-    max_hburg_index = hburg_cases.index(max_hburg_cases)
-    max_hburg_date = hburg_dates[max_hburg_index]
+    # Do the same for rockingham
+    rockingham_dates = np.array([entry[0] for entry in rockingham_data])
+    rockingham_cases = np.array([entry[4] for entry in rockingham_data])
 
-    # Now find the date with the greatest number of new cases in Rockingham County
-    rockingham_dates = [entry[0] for entry in rockingham_data]
-    rockingham_cases = [entry[4] for entry in rockingham_data]
-    max_rockingham_cases = max(rockingham_cases)
-    max_rockingham_index = rockingham_cases.index(max_rockingham_cases)
+
+    # Cases are cumulative, so differences give the new cases reported each day.
+    hburg_new_cases = np.diff(hburg_cases, prepend=0) #this is why we used numpy
+    max_hburg_new_cases = np.max(hburg_new_cases) #get max of the diff
+    max_hburg_index = np.argmax(hburg_new_cases) #get that index
+    max_hburg_date = hburg_dates[max_hburg_index] #find the date with the index
+
+    #do the same for rockingham county
+    rockingham_new_cases = np.diff(rockingham_cases, prepend=0)
+    max_rockingham_new_cases = np.max(rockingham_new_cases)
+    max_rockingham_index = np.argmax(rockingham_new_cases)
     max_rockingham_date = rockingham_dates[max_rockingham_index]
 
     # Print the answer
-    print(f"Date with greatest number of new cases in Harrisonburg: {max_hburg_date} with {max_hburg_cases} cases")
-    print(f"Date with greatest number of new cases in Rockingham County: {max_rockingham_date} with {max_rockingham_cases} cases")
+    print(f"Date with greatest number of new cases in Harrisonburg: {max_hburg_date} with {max_hburg_new_cases} new cases")
+    print(f"Date with greatest number of new cases in Rockingham County: {max_rockingham_date} with {max_rockingham_new_cases} new cases")
+
+
 
     """
     QUESTION 3: What was the worst seven-day period in Harrisonburg city for new COVID cases? 
@@ -176,28 +184,27 @@ def main(filepath):
     #start on different days of the week, that would be odd
     #I will therefore answer this with the a rolling 7 day sum, which is more accurate anyways
 
-    #Thankfully, we already have dates and cases lists, so we can continue with those, just make them njmpy arrays
-    np_hburg_cases = np.array(hburg_cases)
-    np_rockingham_cases = np.array(rockingham_cases)
+    #Thankfully, we already have dates and cases arrays, so we'll just use those
 
-    hburg_rolling_sum = np.convolve(np_hburg_cases, np.ones(7), 'valid') #rolling sum of 7 days
-    rockingham_rolling_sum = np.convolve(np_rockingham_cases, np.ones(7), 'valid')
+
+    hburg_rolling_sum = np.convolve(hburg_new_cases, np.ones(7), 'valid') #rolling sum of 7 days, np concolve is built for this
+    rockingham_rolling_sum = np.convolve(rockingham_new_cases, np.ones(7), 'valid')
 
     #find the max rolling sum and the corresponding date range and entry of max
-    max_hburg_rolling_sum = np.max(hburg_rolling_sum)
-    entry_of_max_hburg = np.argmax(hburg_rolling_sum)
-    start_date_hburg = hburg_dates[entry_of_max_hburg]
+    max_hburg_rolling_sum = np.max(hburg_rolling_sum) #max of the rolling sum
+    entry_of_max_hburg = np.argmax(hburg_rolling_sum) #index of the max rolling sum
+    start_date_hburg = hburg_dates[entry_of_max_hburg] #use index to find the start date
     end_date_hburg = hburg_dates[entry_of_max_hburg + 6] # Assuming 7-day period
 
-
+    #do the same for rockingham county
     max_rockingham_rolling_sum = np.max(rockingham_rolling_sum)
     entry_of_max_rockingham = np.argmax(rockingham_rolling_sum)
     start_date_rockingham = rockingham_dates[entry_of_max_rockingham]
     end_date_rockingham = rockingham_dates[entry_of_max_rockingham + 6] # Assuming 7-day period
 
     # Print the answer
-    print(f"Worst seven-day period in Harrisonburg: {start_date_hburg} to {end_date_hburg} with {max_hburg_rolling_sum} cases")
-    print(f"Worst seven-day period in Rockingham County: {start_date_rockingham} to {end_date_rockingham} with {max_rockingham_rolling_sum} cases")
+    print(f"Worst seven-day period in Harrisonburg: {start_date_hburg} to {end_date_hburg} with {max_hburg_rolling_sum} new cases")
+    print(f"Worst seven-day period in Rockingham County: {start_date_rockingham} to {end_date_rockingham} with {max_rockingham_rolling_sum} new cases")
 
 
 
