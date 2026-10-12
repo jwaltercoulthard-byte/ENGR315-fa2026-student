@@ -69,57 +69,110 @@ def calculate_stress(force, sample_diameter):
     :return: An array of stresses experienced by the sample in MegaPascals (MPa)
     """
 
-    # copy your calculate_stress() from Tensile Testing here
+    # calculate the cross-section area (mm^2)
+    crossArea = math.pi * (sample_diameter / 2) ** 2
 
-    return None
+    # calculate stress (MPa) from load (kN) and cross-sectional area
+    stress = np.array(force) * 1000 / crossArea  # convert kN to N and divide by area in mm^2
+
+    return stress
 
 
 def calculate_max_strength_strain(strain, stress):
     """
     Calculate the Ultimate Tensile Stress and Fracture Strain
-    :param strain: An array of Strain data
-    :param stress: An array of Stress data (MPa)
+    :param strain: An array of Strain data (mm/mm, dimensionless)
+    :param stress: An array of Stress data
     :return:
     Ultimate Tensile Stress: the maximum stress experienced
     Fracture Strain: the maximum strain experienced before fracture
     """
 
-    # copy your calculate_max_strength_strain() from Tensile Testing here
+    # calculate the maximum stress experienced
+    ultimate_tensile_stress = np.max(stress)
 
-    return -1, -1
+    # calculate the maximum strain experienced
+    fracture_strain = np.max(strain)
 
+    return ultimate_tensile_stress, fracture_strain
 
 def calculate_elastic_modulus(strain, stress):
     """
-    Given a set of stress strain data, use the Secant Modulus at 40% method to determine
-    the elastic modulus
-    :param strain: An array of Strain data
-    :param stress: An array of Stress data (MPa)
-    :return:
-    linear_index: the index within the strain/stress data that is the end of the linear region
-    slope: the slope for the linear region of the strain/stress data
-    intercept: y-intercept for linear region best fit of strain/stress data
+        Given a set of stress strain data, use the Secant Modulus at 40% method to determine
+        the elastic modulus
+        :param strain:
+        :param stress:
+        :return:
+        linear_index: the index within the strain/stress data that is the end of the linear region
+        slope: the slope for the linear region of the strain/stress data
+        intercept: y-intercept for linear region best fit of strain/stress data
     """
 
-    # copy your calculate_elastic_modulus() from Tensile Testing here
+    # dummy variables the function should over write
+    linear_index = None
+    slope = None
+    intercept = None
 
-    return None, None, None
+    # Step 3a: find the point that is 40% of peak stress
+    # use from 0 to that value to create a linear plot
 
+    secant_stress = 0.4 * np.max(stress)
+
+    ### your code below ###
+    secant_strain = -1
+
+    # Step 3b: find the intersection between 40% line and the curvey
+    # take the abs() difference between the stress vector and secant_strain point
+
+    diffs = np.abs(stress - secant_stress)
+
+    # use np.argmin() to find the minimum of the diffs array.
+    # this will be the INDEX of the point in stress-strain that is closest to
+    # secant_strain intersection
+
+    # uncomment the line below and replace with your own
+    linear_index = diffs.argmin()
+
+    # Step 3c: down select to linear region for stress and strain
+    # using list slicing. Uncomment lines below
+    linear_stress = stress[:linear_index]
+    linear_strain = strain[:linear_index]
+
+    # Step 3d: find least squares fit to a line in the linear region
+    # use 1-degree polynominal fit (line) from np.polyfit
+    # save the slope and intercept so we can plot the line later
+
+    # uncomment the line below and call np.polyfit
+    slope, intercept = np.polyfit(linear_strain, linear_stress, 1)
+
+    return linear_index, slope, intercept
 
 def calculate_percent_offset(slope, strain, stress):
     """
-    Use the 0.2% offset method to find where the offset line crosses the stress/strain curve
-    :param slope: The elastic modulus (slope of the linear region)
-    :param strain: An array of Strain data
-    :param stress: An array of Stress data (MPa)
+    Determine the 0.2% Offset Yield by identifying the intercept with the stress curve and a parallel line
+
+    :param slope: Slope of the offset line. This should be the elastic modulus
+    :param strain: An array of Strain data (mm/mm, dimensionless)
+    :param stress: An array of Stress data
     :return:
-    offset_line: the 0.2% offset line
-    intercept_index: the index where the offset line crosses the stress/strain curve
+    offset_line: the y-values for the 0.2% offset line
+    intercept_index: The index where the offset line and the strain line intersect
     """
+    # set the desired offset for the line
+    offset = 0.002
 
-    # copy your calculate_percent_offset() from Tensile Testing here
+    # calculate the offset line: y=m(x-0.002) + 0
+    offset_line = slope * (strain - offset)
 
-    return None, -1
+    # measure distance from all points on graph to this line. Consider using the
+    # abs() method to ensure values are positive
+    distance = np.abs(stress - offset_line)
+
+    # use argmin to find the index where the distance is minimal
+    intercept_index = distance.argmin()
+
+    return offset_line, intercept_index
+
 
 
 def calculate_yield_strength(strain, stress, modulus):
