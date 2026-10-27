@@ -29,6 +29,8 @@ def categorical_test(_observed, _expected, _alpha):
     reject = None
 
     # YOUR CODE HERE #
+    chi_stat, p_value = chisquare(_observed, _expected)
+    reject = (p_value < _alpha)
 
     return chi_stat, p_value, reject
 
@@ -47,6 +49,8 @@ def expected_normal_counts(_bins, _mu, _std, _num_samples):
     expected_counts = None
 
     # YOUR CODE HERE #
+    expected_prob = np.diff(norm.cdf(_bins, loc=_mu, scale=_std))
+    expected_counts = expected_prob * _num_samples
 
     return expected_counts
 
@@ -70,6 +74,21 @@ def normal_fit_test(_samples, _alpha):
     reject = None
 
     # YOUR CODE HERE #
+    # Step 1
+    mu, std = norm.fit(_samples)
+
+    # Step 2
+    bins = np.r_[-np.inf, np.linspace(mu - 2 * std, mu + 2 * std, 9), np.inf]
+
+    # Step 3
+    observed_counts = np.histogram(_samples, bins=bins)[0]
+
+    # Step 4
+    expected_counts = expected_normal_counts(bins, mu, std, len(_samples))
+
+    # Step 5
+    chi_stat, p_value = chisquare(f_obs=observed_counts, f_exp=expected_counts, ddof=2)
+    reject = (p_value < _alpha)
 
     return chi_stat, p_value, reject
 
