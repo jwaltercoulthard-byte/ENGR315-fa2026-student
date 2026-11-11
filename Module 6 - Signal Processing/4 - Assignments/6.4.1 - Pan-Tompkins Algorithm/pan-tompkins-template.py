@@ -1,5 +1,6 @@
 import numpy as np
 from ekg_testbench import EKGTestBench
+from scipy import signal as sig
 
 def detect_heartbeats(filepath):
     """
@@ -17,12 +18,23 @@ def detect_heartbeats(filepath):
     # load data in matrix from CSV file; skip first two rows
     ## your code here
 
+    heartbeats = np.loadtxt(path, delimiter=',', skiprows=2)
+
     # save each vector as own variable
     ## your code here
 
+    time = heartbeats[:, 0]
+    mlii = heartbeats[:, 1]
+    v5 = heartbeats[:, 2]
+
+
+
+
     # identify one column to process. Call that column signal
 
-    signal = -1 ## your code here
+    signal = mlii
+    
+    ## your code here
 
     # pass data through LOW PASS FILTER (OPTIONAL)
     ## your code here
@@ -33,18 +45,30 @@ def detect_heartbeats(filepath):
     # pass data through differentiator
     ## your code here
 
+    signal = np.diff(signal)
+
     # pass data through square function
     ## your code here
 
+    signal = signal ** 2
+
     # pass through moving average window
     ## your code here
+
+    signal = np.convolve(signal, np.ones(30)/30, mode='same')
 
     # use find_peaks to identify peaks within averaged/filtered data
     # save the peaks result and return as part of testbench result
 
     ## your code here peaks,_ = find_peaks(....)
 
-    beats = None
+    beats, _ = sig.find_peaks(signal, distance=100, height=0.005)
+
+    print("len signal ", len(signal))
+
+    print("Detected ", len(beats), " heartbeats in signal.")
+
+    
 
     # do not modify this line
     return signal, beats
@@ -71,7 +95,7 @@ if __name__ == "__main__":
     ### DO NOT MODIFY BELOW THIS LINE!!! ###
 
     # path to ekg folder
-    path_to_folder = "../../../data/ekg/"
+    path_to_folder = "data/ekg/"
 
     # select a signal file to run
     signal_filepath = path_to_folder + database_name + ".csv"
